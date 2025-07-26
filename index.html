@@ -1,62 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Topics</title>
-    <script>
-        // Get topic from URL
-        function getTopicFromURL() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get("startapp");
-        }
-
-        // Define all topic contents
-        const topics = {
-            newton: `
-                <h1 class="text-3xl font-bold mb-4">Newton's Laws of Motion</h1>
-                <p class="mb-2">Newton's laws describe the relationship between motion and forces. There are three laws:</p>
-                <ul class="list-disc list-inside mb-4">
-                    <li><strong>First Law:</strong> An object stays at rest or in uniform motion unless acted upon by a force.</li>
-                    <li><strong>Second Law:</strong> F = ma (Force equals mass times acceleration).</li>
-                    <li><strong>Third Law:</strong> For every action, there's an equal and opposite reaction.</li>
-                </ul>
-                <p>These laws form the foundation of classical mechanics.</p>
-            `,
-            impulse: `
-                <h1 class="text-3xl font-bold mb-4">Impulse</h1>
-                <p class="mb-2">Impulse is the change in momentum of an object when a force is applied over a period of time.</p>
-                <p class="mb-4">It is given by the formula:</p>
-                <p class="mb-4"><strong>Impulse = Force × Time</strong></p>
-                <p>Impulse explains how things like airbags and padding reduce injuries in crashes.</p>
-            `,
-            acceleration: `
-                <h1 class="text-3xl font-bold mb-4">Acceleration</h1>
-                <p class="mb-2">Acceleration is the rate at which an object changes its velocity.</p>
-                <p class="mb-4">Formula:</p>
-                <p class="mb-4"><strong>a = (v - u) / t</strong> — where v is final velocity, u is initial velocity, and t is time.</p>
-                <p>It plays a key role in Newton's second law of motion.</p>
-            `
-        };
-
-        // Load topic content
-        function loadTopic() {
-            const topic = getTopicFromURL();
-            const contentDiv = document.getElementById("content");
-
-            if (topics[topic]) {
-                contentDiv.innerHTML = topics[topic];
-            } else {
-                contentDiv.innerHTML = `<h1 class="text-2xl font-bold mb-4">Topic Not Found</h1>
-                    <p>Please make sure the link is correct.</p>`;
-            }
-        }
-
-        window.onload = loadTopic;
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Topics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      user-select: none;
+    }
+  </style>
 </head>
-<body class="bg-black text-white min-h-screen p-6">
-    <div id="content" class="max-w-3xl mx-auto"></div>
+<body>
+  <div id="content" class="whitespace-pre-wrap text-white max-w-3xl mx-auto"></div>
+
+  <script>
+    const topics = {
+      newton: `Newton's Laws of Motion
+
+1. First Law (Inertia): 
+An object at rest stays at rest and an object in motion stays in motion unless acted upon by an external force.
+
+2. Second Law (F = ma): 
+Force equals mass times acceleration.
+
+3. Third Law: 
+Every action has an equal and opposite reaction.`,
+      
+      impulse: `Impulse
+
+Impulse = Force × Time
+Impulse changes momentum.
+Used in real life: airbags, sports techniques, etc.`,
+
+      acceleration: `Acceleration
+
+Acceleration is how fast velocity changes.
+Formula: a = (v - u) / t
+
+Where:
+v = final velocity
+u = initial velocity
+t = time
+Unit = m/s²`
+    };
+
+    function loadContent() {
+      let topic = "";
+
+      // First try Telegram Mini App param
+      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe) {
+        topic = Telegram.WebApp.initDataUnsafe.start_param;
+      }
+
+      // Fallback if testing in browser
+      if (!topic) {
+        const urlParams = new URLSearchParams(window.location.search);
+        topic = urlParams.get("startapp") || urlParams.get("start");
+      }
+
+      const contentDiv = document.getElementById("content");
+      contentDiv.textContent = topics[topic] || "Topic not found.";
+    }
+
+    // Required for Telegram Mini App
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+      }
+      loadContent();
+    });
+  </script>
 </body>
 </html>
