@@ -1,141 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Physics Mini App</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Topics</title>
+    <script>
+        // Get topic from URL
+        function getTopicFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("startapp");
+        }
 
-    body {
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      padding: 20px;
-      user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      overflow-x: hidden;
-    }
+        // Define all topic contents
+        const topics = {
+            newton: `
+                <h1 class="text-3xl font-bold mb-4">Newton's Laws of Motion</h1>
+                <p class="mb-2">Newton's laws describe the relationship between motion and forces. There are three laws:</p>
+                <ul class="list-disc list-inside mb-4">
+                    <li><strong>First Law:</strong> An object stays at rest or in uniform motion unless acted upon by a force.</li>
+                    <li><strong>Second Law:</strong> F = ma (Force equals mass times acceleration).</li>
+                    <li><strong>Third Law:</strong> For every action, there's an equal and opposite reaction.</li>
+                </ul>
+                <p>These laws form the foundation of classical mechanics.</p>
+            `,
+            impulse: `
+                <h1 class="text-3xl font-bold mb-4">Impulse</h1>
+                <p class="mb-2">Impulse is the change in momentum of an object when a force is applied over a period of time.</p>
+                <p class="mb-4">It is given by the formula:</p>
+                <p class="mb-4"><strong>Impulse = Force × Time</strong></p>
+                <p>Impulse explains how things like airbags and padding reduce injuries in crashes.</p>
+            `,
+            acceleration: `
+                <h1 class="text-3xl font-bold mb-4">Acceleration</h1>
+                <p class="mb-2">Acceleration is the rate at which an object changes its velocity.</p>
+                <p class="mb-4">Formula:</p>
+                <p class="mb-4"><strong>a = (v - u) / t</strong> — where v is final velocity, u is initial velocity, and t is time.</p>
+                <p>It plays a key role in Newton's second law of motion.</p>
+            `
+        };
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
+        // Load topic content
+        function loadTopic() {
+            const topic = getTopicFromURL();
+            const contentDiv = document.getElementById("content");
 
-    .topic-title {
-      font-size: 1.8em;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
+            if (topics[topic]) {
+                contentDiv.innerHTML = topics[topic];
+            } else {
+                contentDiv.innerHTML = `<h1 class="text-2xl font-bold mb-4">Topic Not Found</h1>
+                    <p>Please make sure the link is correct.</p>`;
+            }
+        }
 
-    .topic-content {
-      font-size: 1.1em;
-      line-height: 1.6;
-      margin-bottom: 40px;
-      white-space: pre-wrap;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 30px;
-    }
-
-    .button-group button {
-      background-color: #222;
-      color: white;
-      border: 1px solid #0ff;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 8px;
-      font-size: 1em;
-    }
-
-    .button-group button:hover {
-      background-color: #0ff;
-      color: black;
-    }
-
-    @media (max-width: 600px) {
-      .button-group {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
-  </style>
-
-  <!-- Anti-screenshot warning via JS -->
-  <script>
-    document.addEventListener("keydown", function(e) {
-      if (e.key === "PrintScreen") {
-        alert("📸 Screenshot is disabled.");
-        e.preventDefault();
-      }
-    });
-  </script>
+        window.onload = loadTopic;
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <div class="button-group">
-      <button onclick="showTopic('newton')">Newton</button>
-      <button onclick="showTopic('energy')">Energy</button>
-      <button onclick="showTopic('impulse')">Impulse</button>
-    </div>
-
-    <div id="content"></div>
-  </div>
-
-  <script>
-    const topics = {
-      "newton": {
-        title: "Newton's Laws of Motion",
-        content: `1. An object remains at rest or moves at constant velocity unless acted upon by a force.
-2. Force equals mass times acceleration (F = m × a).
-3. Every action has an equal and opposite reaction.`
-      },
-      "energy": {
-        title: "Forms of Energy",
-        content: `Energy is the capacity to do work.
-- Kinetic Energy: KE = 0.5 × m × v²
-- Potential Energy: PE = m × g × h
-- Other forms: Thermal, Chemical, Nuclear, Electrical`
-      },
-      "impulse": {
-        title: "Impulse and Momentum",
-        content: `Impulse is the change in momentum.
-Impulse = Force × Time
-Unit: Newton-second (N·s)
-It explains how long a force acts to change motion.`
-      }
-    };
-
-    function showTopic(key) {
-      const container = document.getElementById("content");
-      if (topics[key]) {
-        container.innerHTML = `
-          <div class="topic-title">${topics[key].title}</div>
-          <div class="topic-content">${topics[key].content}</div>
-        `;
-      } else {
-        container.innerHTML = `
-          <div class="topic-title">Topic Not Found</div>
-          <div class="topic-content">Please choose from Newton, Energy, or Impulse.</div>
-        `;
-      }
-    }
-
-    // Auto-load from URL if needed (startapp or topic)
-    const params = new URLSearchParams(window.location.search);
-    const topicKey = params.get("topic") || params.get("startapp");
-    if (topicKey) {
-      showTopic(topicKey);
-    }
-  </script>
+<body class="bg-black text-white min-h-screen p-6">
+    <div id="content" class="max-w-3xl mx-auto"></div>
 </body>
 </html>
