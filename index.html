@@ -10,30 +10,86 @@
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
       background-color: black;
       color: white;
       font-family: sans-serif;
       padding: 20px;
       user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      overflow-x: hidden;
     }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
     .topic-title {
-      font-size: 1.5em;
+      font-size: 1.8em;
       font-weight: bold;
       margin-bottom: 10px;
-      width: 100%;
     }
+
     .topic-content {
       font-size: 1.1em;
       line-height: 1.6;
-      margin-bottom: 30px;
-      width: 100%;
+      margin-bottom: 40px;
       white-space: pre-wrap;
     }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .button-group button {
+      background-color: #222;
+      color: white;
+      border: 1px solid #0ff;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+
+    .button-group button:hover {
+      background-color: #0ff;
+      color: black;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
+
+  <!-- Anti-screenshot warning via JS -->
+  <script>
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "PrintScreen") {
+        alert("📸 Screenshot is disabled.");
+        e.preventDefault();
+      }
+    });
+  </script>
 </head>
 <body>
-  <div id="content"></div>
+  <div class="container">
+    <div class="button-group">
+      <button onclick="showTopic('newton')">Newton</button>
+      <button onclick="showTopic('energy')">Energy</button>
+      <button onclick="showTopic('impulse')">Impulse</button>
+    </div>
+
+    <div id="content"></div>
+  </div>
 
   <script>
     const topics = {
@@ -59,27 +115,26 @@ It explains how long a force acts to change motion.`
       }
     };
 
+    function showTopic(key) {
+      const container = document.getElementById("content");
+      if (topics[key]) {
+        container.innerHTML = `
+          <div class="topic-title">${topics[key].title}</div>
+          <div class="topic-content">${topics[key].content}</div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="topic-title">Topic Not Found</div>
+          <div class="topic-content">Please choose from Newton, Energy, or Impulse.</div>
+        `;
+      }
+    }
+
+    // Auto-load from URL if needed (startapp or topic)
     const params = new URLSearchParams(window.location.search);
-    const topicKey = params.get("topic");
-
-    const container = document.getElementById("content");
-
-    if (topics[topicKey]) {
-      const title = document.createElement("div");
-      title.className = "topic-title";
-      title.textContent = topics[topicKey].title;
-
-      const paragraph = document.createElement("div");
-      paragraph.className = "topic-content";
-      paragraph.textContent = topics[topicKey].content;
-
-      container.appendChild(title);
-      container.appendChild(paragraph);
-    } else {
-      container.innerHTML = `
-        <div class="topic-title">Topic Not Found</div>
-        <div class="topic-content">Try ?topic=newton, ?topic=energy, or ?topic=impulse in the URL.</div>
-      `;
+    const topicKey = params.get("topic") || params.get("startapp");
+    if (topicKey) {
+      showTopic(topicKey);
     }
   </script>
 </body>
