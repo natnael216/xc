@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Physics Mini App</title>
+</head>
+<body style="background-color: black; color: white; font-family: sans-serif; padding: 20px;">
+  <h1 id="title" style="color: yellow;">Loading...</h1>
+  <p id="content"></p>
+
+  <script>
+    const topics = {
+      "newton": {
+        title: "Newton's Laws",
+        content: `Newton's laws describe motion:\n
+1. Object stays at rest or moves unless acted on.\n
+2. F = m × a.\n
+3. Every action has equal and opposite reaction.`
+      },
+      "impulse": {
+        title: "Impulse",
+        content: `Impulse is change in momentum:\nImpulse = Force × Time.`
+      }
+      // Add more topics later
+    };
+
+    const topicKey = new URLSearchParams(window.location.search).get("topic");
+    const topic = topics[topicKey];
+
+    if (topic) {
+      document.getElementById("title").textContent = topic.title;
+      document.getElementById("content").textContent = topic.content;
+    } else {
+      document.getElementById("title").textContent = "Topic Not Found";
+      document.getElementById("content").textContent = "This topic does not exist.";
+    }
+  </script>
+</body>
+</html>
