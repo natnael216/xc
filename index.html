@@ -1,79 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Physics Topics</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics Mini App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Full black background and white text */
     body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: black;
-      color: white;
-      font-family: sans-serif;
-      user-select: none;
+      user-select: none;          /* Block text selection */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    ::selection {
+      background: none;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    p {
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    /* Edge-to-edge container */
+    #content-wrapper {
+      max-width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Hide screenshot via PrintScreen (discouraged only) */
+    @media screen {
+      body:after {
+        content: '';
+        display: block;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        pointer-events: none;
+        background: rgba(0, 0, 0, 0);
+        z-index: 9999;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="content" class="whitespace-pre-wrap text-white max-w-3xl mx-auto"></div>
+  <div id="content-wrapper">
+    <h1 id="title">Loading...</h1>
+    <p id="content"></p>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <script>
     const topics = {
-      newton: `Newton's Laws of Motion
+      "newton": {
+        title: "Newton's Laws of Motion",
+        content: `Newton's laws describe motion:
 
-1. First Law (Inertia): 
-An object at rest stays at rest and an object in motion stays in motion unless acted upon by an external force.
+1. An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an unbalanced force.
 
-2. Second Law (F = ma): 
-Force equals mass times acceleration.
+2. Acceleration is directly proportional to net force and inversely proportional to mass. (F = m × a)
 
-3. Third Law: 
-Every action has an equal and opposite reaction.`,
-      
-      impulse: `Impulse
+3. For every action, there is an equal and opposite reaction.`
+      },
+      "impulse": {
+        title: "Impulse and Momentum",
+        content: `Impulse = Force × Time
 
-Impulse = Force × Time
-Impulse changes momentum.
-Used in real life: airbags, sports techniques, etc.`,
+Impulse changes an object's momentum.
 
-      acceleration: `Acceleration
+Units: N·s or kg·m/s
 
-Acceleration is how fast velocity changes.
-Formula: a = (v - u) / t
+Impulse explains why airbags, gloves, and pads protect us.`
+      },
+      "energy": {
+        title: "Forms of Energy",
+        content: `Energy is the ability to do work.
 
-Where:
-v = final velocity
-u = initial velocity
-t = time
-Unit = m/s²`
+- Kinetic Energy: 0.5 × m × v²
+- Potential Energy: m × g × h
+- Thermal Energy
+- Chemical, Nuclear, Electrical
+
+Energy can be converted but not destroyed.`
+      }
     };
 
-    function loadContent() {
-      let topic = "";
+    function updateContent(topicKey) {
+      const titleElement = document.getElementById("title");
+      const contentElement = document.getElementById("content");
 
-      // First try Telegram Mini App param
-      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe) {
-        topic = Telegram.WebApp.initDataUnsafe.start_param;
+      const topic = topics[topicKey];
+
+      if (topic) {
+        titleElement.textContent = topic.title;
+        contentElement.textContent = topic.content;
+      } else {
+        titleElement.textContent = "Topic Not Found";
+        contentElement.textContent = "This topic is not in our database. Use the bot to get a valid topic link.";
       }
-
-      // Fallback if testing in browser
-      if (!topic) {
-        const urlParams = new URLSearchParams(window.location.search);
-        topic = urlParams.get("startapp") || urlParams.get("start");
-      }
-
-      const contentDiv = document.getElementById("content");
-      contentDiv.textContent = topics[topic] || "Topic not found.";
     }
 
-    // Required for Telegram Mini App
-    window.addEventListener("DOMContentLoaded", function () {
-      if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
+    document.addEventListener('DOMContentLoaded', () => {
+      let topicKey = null;
+
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        if (Telegram.WebApp.initDataUnsafe?.start_param) {
+          topicKey = Telegram.WebApp.initDataUnsafe.start_param;
+        }
       }
-      loadContent();
+
+      if (!topicKey) {
+        const urlParams = new URLSearchParams(window.location.search);
+        topicKey = urlParams.get("topic");
+      }
+
+      if (topicKey) {
+        updateContent(topicKey);
+      } else {
+        document.getElementById("title").textContent = "Welcome to Physics Mini App";
+        document.getElementById("content").textContent =
+          "Use the Telegram bot to open a topic (e.g., ?startapp=newton or ?topic=impulse).";
+      }
     });
   </script>
 </body>
