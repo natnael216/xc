@@ -1,39 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Physics Mini App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Mini App</title>
+    <!-- Tailwind CSS for basic styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and appearance */
+        body {
+            background-color: #000; /* Black background */
+            color: #fff; /* White text */
+            font-family: 'Inter', sans-serif; /* Modern font */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+            margin: 0;
+        }
+        .container {
+            background-color: #1a1a1a; /* Darker background for content box */
+            padding: 30px;
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3); /* Subtle glow */
+            max-width: 90%; /* Responsive width */
+            width: 600px; /* Max width for larger screens */
+            text-align: center;
+            border: 1px solid #0ff; /* Cyan border */
+        }
+        h1 {
+            color: #0ff; /* Cyan for titles */
+            font-size: 2.5rem; /* Larger title */
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.7); /* Title glow */
+        }
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            white-space: pre-wrap; /* Preserve line breaks from content string */
+            text-align: left; /* Align text left within the box */
+            margin-top: 15px;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px;
+                max-width: 95%;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
-<body style="background-color: black; color: white; font-family: sans-serif; padding: 20px;">
-  <h1 id="title" style="color: yellow;">Loading...</h1>
-  <p id="content"></p>
+<body>
+    <div class="container">
+        <h1 id="title">Loading...</h1>
+        <p id="content"></p>
+    </div>
 
-  <script>
-    const topics = {
-      "newton": {
-        title: "Newton's Laws",
-        content: `Newton's laws describe motion:\n
-1. Object stays at rest or moves unless acted on.\n
-2. F = m × a.\n
-3. Every action has equal and opposite reaction.`
-      },
-      "impulse": {
-        title: "Impulse",
-        content: `Impulse is change in momentum:\nImpulse = Force × Time.`
-      }
-      // Add more topics later
-    };
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    const topicKey = new URLSearchParams(window.location.search).get("topic");
-    const topic = topics[topicKey];
+    <script>
+        // Define the content for different topics
+        const topics = {
+            "newton": {
+                title: "Newton's Laws of Motion",
+                content: `Newton's laws describe motion:
 
-    if (topic) {
-      document.getElementById("title").textContent = topic.title;
-      document.getElementById("content").textContent = topic.content;
-    } else {
-      document.getElementById("title").textContent = "Topic Not Found";
-      document.getElementById("content").textContent = "This topic does not exist.";
-    }
-  </script>
+1.  An object at rest stays at rest, and an object in motion stays in motion with the same speed and in the same direction unless acted upon by an unbalanced force.
+2.  The acceleration of an object as produced by a net force is directly proportional to the magnitude of the net force, in the same direction as the net force, and inversely proportional to the mass of the object (F = m × a).
+3.  For every action, there is an equal and opposite reaction.`
+            },
+            "impulse": {
+                title: "Impulse and Momentum",
+                content: `Impulse is a measure of the change in momentum of an object. It is calculated as the product of the force applied to an object and the time interval over which the force is applied.
+
+Formula:
+Impulse (J) = Force (F) × Time (Δt)
+
+Units:
+Newton-seconds (N·s) or kilogram-meters per second (kg·m/s).
+
+Impulse is a vector quantity, meaning it has both magnitude and direction.`
+            },
+            // Add more topics here as needed
+            "energy": {
+                title: "Forms of Energy",
+                content: `Energy is the capacity to do work. It exists in various forms:
+
+-   **Kinetic Energy:** Energy of motion.
+    Formula: KE = 0.5 × m × v²
+-   **Potential Energy:** Stored energy due to position or state.
+    Types: Gravitational Potential Energy (GPE = mgh), Elastic Potential Energy.
+-   **Thermal Energy:** Related to the temperature of an object.
+-   **Chemical Energy:** Stored in the bonds of chemical compounds.
+-   **Nuclear Energy:** Stored in the nucleus of atoms.
+-   **Electrical Energy:** Energy associated with the flow of electric charge.`
+            }
+        };
+
+        // Function to update the content based on the topic key
+        function updateContent(topicKey) {
+            const titleElement = document.getElementById("title");
+            const contentElement = document.getElementById("content");
+
+            const topic = topics[topicKey];
+
+            if (topic) {
+                titleElement.textContent = topic.title;
+                contentElement.textContent = topic.content;
+            } else {
+                titleElement.textContent = "Topic Not Found";
+                contentElement.textContent = "The requested physics topic does not exist in our database. Please try a different link or return to the main bot menu.";
+            }
+        }
+
+        // Main logic to determine the topic
+        document.addEventListener('DOMContentLoaded', () => {
+            let foundTopicKey = null;
+
+            // 1. Try to get the start_param from Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready(); // Inform Telegram that the app is ready
+                if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.start_param) {
+                    foundTopicKey = window.Telegram.WebApp.initDataUnsafe.start_param;
+                    console.log("Topic from Telegram start_param:", foundTopicKey);
+                }
+            }
+
+            // 2. If not found via Telegram, try to get it from URL query parameters (for direct browser access)
+            if (!foundTopicKey) {
+                const urlParams = new URLSearchParams(window.location.search);
+                foundTopicKey = urlParams.get("topic");
+                if (foundTopicKey) {
+                    console.log("Topic from URL query parameter:", foundTopicKey);
+                }
+            }
+
+            // Update the content based on the found topic key
+            if (foundTopicKey) {
+                updateContent(foundTopicKey);
+            } else {
+                // Default content if no specific topic is provided
+                updateContent(null); // Will display "Topic Not Found" or a welcome message
+                document.getElementById("title").textContent = "Welcome to Physics Mini App!";
+                document.getElementById("content").textContent = "Use the Telegram bot to select a topic like Newton's Laws or Impulse, or try a direct link with '?topic=newton' in your browser.";
+            }
+        });
+    </script>
 </body>
 </html>
