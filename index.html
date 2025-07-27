@@ -43,6 +43,24 @@
       margin: 0;
     }
 
+    #screenshot-warning {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 0, 0, 0.8);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      user-select: none;
+    }
+
     @media screen {
       body:after {
         content: '';
@@ -61,6 +79,9 @@
   <div id="content-wrapper">
     <h1 id="title">Loading...</h1>
     <p id="content"></p>
+  </div>
+  <div id="screenshot-warning">
+    Screenshots are not allowed in this Mini App.
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -127,18 +148,35 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
       if (topic) {
         titleElement.textContent = topic.title;
         contentElement.textContent = topic.content;
-
-        // ⏳ Timeout: Hide content after 15 seconds
-        setTimeout(() => {
-          titleElement.textContent = "⏳ Content Hidden";
-          contentElement.textContent = "This topic was hidden after 15 seconds to protect your privacy.";
-        }, 15000); // 15,000 ms = 15 seconds
-
       } else {
         titleElement.textContent = "Topic Not Found";
         contentElement.textContent = "This topic is not in our database. Use the bot to get a valid topic link.";
       }
     }
+
+    // Screenshot prevention logic
+    const screenshotWarning = document.getElementById("screenshot-warning");
+
+    function showScreenshotWarning() {
+      screenshotWarning.style.display = "flex";
+      setTimeout(() => {
+        screenshotWarning.style.display = "none";
+      }, 2000); // Hide after 2 seconds
+    }
+
+    document.addEventListener("keydown", (event) => {
+      // Detect common screenshot shortcuts
+      const isScreenshotAttempt =
+        (event.ctrlKey && event.key === "PrintScreen") || // Windows: Ctrl + PrintScreen
+        (event.metaKey && event.shiftKey && (event.key === "3" || event.key === "4")) || // Mac: Cmd + Shift + 3/4
+        (event.key === "PrintScreen") || // PrintScreen alone
+        (event.altKey && event.key === "PrintScreen"); // Alt + PrintScreen
+
+      if (isScreenshotAttempt) {
+        event.preventDefault();
+        showScreenshotWarning();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       let topicKey = null;
