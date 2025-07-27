@@ -41,6 +41,12 @@
       max-width: 100%;
       padding: 0;
       margin: 0;
+      transition: filter 0.3s ease;
+    }
+
+    #content-wrapper.blurred {
+      filter: blur(10px);
+      pointer-events: none;
     }
 
     #screenshot-warning {
@@ -50,15 +56,27 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 0, 0, 0.8);
+      background: rgba(255, 0, 0, 0.9);
       color: #fff;
       font-size: 1.5rem;
       font-weight: bold;
       text-align: center;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       z-index: 10000;
       user-select: none;
+    }
+
+    #screenshot-warning button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
     }
 
     @media screen {
@@ -81,7 +99,8 @@
     <p id="content"></p>
   </div>
   <div id="screenshot-warning">
-    Screenshots are not allowed in this Mini App.
+    <span>Screenshots are not allowed in this Mini App.</span>
+    <button onclick="dismissWarning()">OK</button>
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -156,23 +175,42 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
 
     // Screenshot prevention logic
     const screenshotWarning = document.getElementById("screenshot-warning");
+    const contentWrapper = document.getElementById("content-wrapper");
 
     function showScreenshotWarning() {
       screenshotWarning.style.display = "flex";
-      setTimeout(() => {
-        screenshotWarning.style.display = "none";
-      }, 2000); // Hide after 2 seconds
+      contentWrapper.classList.add("blurred");
     }
 
+    function dismissWarning() {
+      screenshotWarning.style.display = "none";
+      contentWrapper.classList.remove("blurred");
+    }
+
+    // Detect keyboard-based screenshot attempts
     document.addEventListener("keydown", (event) => {
-      // Detect common screenshot shortcuts
       const isScreenshotAttempt =
         (event.ctrlKey && event.key === "PrintScreen") || // Windows: Ctrl + PrintScreen
-        (event.metaKey && event.shiftKey && (event.key === "3" || event.key === "4")) || // Mac: Cmd + Shift + 3/4
         (event.key === "PrintScreen") || // PrintScreen alone
-        (event.altKey && event.key === "PrintScreen"); // Alt + PrintScreen
+        (event.altKey && event.key === "PrintScreen") || // Alt + PrintScreen
+        (event.metaKey && event.shiftKey && (event.key === "3" || event.key === "4")) || // Mac: Cmd + Shift + 3/4
+        (event.metaKey && event.key === "s"); // Mac: Cmd + S (potential save attempt)
 
       if (isScreenshotAttempt) {
+        event.preventDefault();
+        showScreenshotWarning();
+      }
+    });
+
+    // Block right-click (context menu) to deter image or text copying
+    document.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      showScreenshotWarning();
+    });
+
+    // Attempt to detect mobile screenshot-like behavior (touch events are less reliable)
+    document.addEventListener("touchstart", (event) => {
+      if (event.touches.length > 2) { // Multi-touch (e.g., three-finger gestures on some devices)
         event.preventDefault();
         showScreenshotWarning();
       }
