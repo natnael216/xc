@@ -16,6 +16,7 @@
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
+      position: relative;
     }
 
     ::selection {
@@ -45,7 +46,7 @@
     }
 
     #content-wrapper.blurred {
-      filter: blur(10px);
+      filter: blur(20px);
       pointer-events: none;
     }
 
@@ -56,7 +57,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 0, 0, 0.9);
+      background: rgba(255, 0, 0, 0.95);
       color: #fff;
       font-size: 1.5rem;
       font-weight: bold;
@@ -79,6 +80,23 @@
       font-size: 1rem;
     }
 
+    #watermark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      opacity: 0.3;
+      color: #fff;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      user-select: none;
+    }
+
     @media screen {
       body:after {
         content: '';
@@ -94,6 +112,7 @@
   </style>
 </head>
 <body>
+  <div id="watermark"></div>
   <div id="content-wrapper">
     <h1 id="title">Loading...</h1>
     <p id="content"></p>
@@ -176,16 +195,32 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
     // Screenshot prevention logic
     const screenshotWarning = document.getElementById("screenshot-warning");
     const contentWrapper = document.getElementById("content-wrapper");
+    const watermark = document.getElementById("watermark");
+
+    // Dynamic watermark with timestamp and user info (if available)
+    function updateWatermark() {
+      let userInfo = "Anonymous";
+      if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
+        userInfo = Telegram.WebApp.initDataUnsafe.user.id || "Anonymous";
+      }
+      const timestamp = new Date().toLocaleString();
+      watermark.textContent = `Protected Content | User: ${userInfo} | ${timestamp}`;
+    }
 
     function showScreenshotWarning() {
       screenshotWarning.style.display = "flex";
       contentWrapper.classList.add("blurred");
+      updateWatermark();
     }
 
     function dismissWarning() {
       screenshotWarning.style.display = "none";
       contentWrapper.classList.remove("blurred");
     }
+
+    // Initialize watermark on load
+    updateWatermark();
+    setInterval(updateWatermark, 60000); // Update watermark every minute
 
     // Detect keyboard-based screenshot attempts
     document.addEventListener("keydown", (event) => {
@@ -194,7 +229,9 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
         (event.key === "PrintScreen") || // PrintScreen alone
         (event.altKey && event.key === "PrintScreen") || // Alt + PrintScreen
         (event.metaKey && event.shiftKey && (event.key === "3" || event.key === "4")) || // Mac: Cmd + Shift + 3/4
-        (event.metaKey && event.key === "s"); // Mac: Cmd + S (potential save attempt)
+        (event.metaKey && event.key === "s") || // Mac: Cmd + S
+        (event.ctrlKey && event.key === "s") || // Ctrl + S
+        (event.key === "Snapshot"); // Some keyboards
 
       if (isScreenshotAttempt) {
         event.preventDefault();
@@ -202,16 +239,23 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
       }
     });
 
-    // Block right-click (context menu) to deter image or text copying
+    // Block right-click (context menu)
     document.addEventListener("contextmenu", (event) => {
       event.preventDefault();
       showScreenshotWarning();
     });
 
-    // Attempt to detect mobile screenshot-like behavior (touch events are less reliable)
+    // Detect mobile screenshot-like behavior
     document.addEventListener("touchstart", (event) => {
-      if (event.touches.length > 2) { // Multi-touch (e.g., three-finger gestures on some devices)
+      if (event.touches.length > 2) { // Multi-touch (e.g., three-finger gestures)
         event.preventDefault();
+        showScreenshotWarning();
+      }
+    });
+
+    // Detect visibility changes (e.g., user switching to screenshot app)
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
         showScreenshotWarning();
       }
     });
