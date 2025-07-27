@@ -127,12 +127,6 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
       if (topic) {
         titleElement.textContent = topic.title;
         contentElement.textContent = topic.content;
-
-        // ⏳ Hide after 15 seconds
-        setTimeout(() => {
-          titleElement.textContent = "⏳ Content Hidden";
-          contentElement.textContent = "This topic was hidden after 15 seconds to protect your privacy.";
-        }, 15000);
       } else {
         titleElement.textContent = "Topic Not Found";
         contentElement.textContent = "This topic is not in our database. Use the bot to get a valid topic link.";
