@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
-      background-color: #000;
+      background-color: #1e1e2d; /* Telegram-style dark */
       color: #fff;
       font-family: sans-serif;
       margin: 0;
@@ -16,7 +16,6 @@
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
-      position: relative;
     }
 
     ::selection {
@@ -42,59 +41,6 @@
       max-width: 100%;
       padding: 0;
       margin: 0;
-      transition: filter 0.3s ease;
-    }
-
-    #content-wrapper.blurred {
-      filter: blur(20px);
-      pointer-events: none;
-    }
-
-    #screenshot-warning {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 0, 0, 0.95);
-      color: #fff;
-      font-size: 1.5rem;
-      font-weight: bold;
-      text-align: center;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 10000;
-      user-select: none;
-    }
-
-    #screenshot-warning button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #fff;
-      color: #000;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    #watermark {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      opacity: 0.3;
-      color: #fff;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9998;
-      user-select: none;
     }
 
     @media screen {
@@ -112,14 +58,9 @@
   </style>
 </head>
 <body>
-  <div id="watermark"></div>
   <div id="content-wrapper">
     <h1 id="title">Loading...</h1>
     <p id="content"></p>
-  </div>
-  <div id="screenshot-warning">
-    <span>Screenshots are not allowed in this Mini App.</span>
-    <button onclick="dismissWarning()">OK</button>
   </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -186,79 +127,17 @@ If you walk 3 meters forward and then 3 meters back, the distance = 6 meters, bu
       if (topic) {
         titleElement.textContent = topic.title;
         contentElement.textContent = topic.content;
+
+        // ⏳ Hide after 15 seconds
+        setTimeout(() => {
+          titleElement.textContent = "⏳ Content Hidden";
+          contentElement.textContent = "This topic was hidden after 15 seconds to protect your privacy.";
+        }, 15000);
       } else {
         titleElement.textContent = "Topic Not Found";
         contentElement.textContent = "This topic is not in our database. Use the bot to get a valid topic link.";
       }
     }
-
-    // Screenshot prevention logic
-    const screenshotWarning = document.getElementById("screenshot-warning");
-    const contentWrapper = document.getElementById("content-wrapper");
-    const watermark = document.getElementById("watermark");
-
-    // Dynamic watermark with timestamp and user info (if available)
-    function updateWatermark() {
-      let userInfo = "Anonymous";
-      if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-        userInfo = Telegram.WebApp.initDataUnsafe.user.id || "Anonymous";
-      }
-      const timestamp = new Date().toLocaleString();
-      watermark.textContent = `Protected Content | User: ${userInfo} | ${timestamp}`;
-    }
-
-    function showScreenshotWarning() {
-      screenshotWarning.style.display = "flex";
-      contentWrapper.classList.add("blurred");
-      updateWatermark();
-    }
-
-    function dismissWarning() {
-      screenshotWarning.style.display = "none";
-      contentWrapper.classList.remove("blurred");
-    }
-
-    // Initialize watermark on load
-    updateWatermark();
-    setInterval(updateWatermark, 60000); // Update watermark every minute
-
-    // Detect keyboard-based screenshot attempts
-    document.addEventListener("keydown", (event) => {
-      const isScreenshotAttempt =
-        (event.ctrlKey && event.key === "PrintScreen") || // Windows: Ctrl + PrintScreen
-        (event.key === "PrintScreen") || // PrintScreen alone
-        (event.altKey && event.key === "PrintScreen") || // Alt + PrintScreen
-        (event.metaKey && event.shiftKey && (event.key === "3" || event.key === "4")) || // Mac: Cmd + Shift + 3/4
-        (event.metaKey && event.key === "s") || // Mac: Cmd + S
-        (event.ctrlKey && event.key === "s") || // Ctrl + S
-        (event.key === "Snapshot"); // Some keyboards
-
-      if (isScreenshotAttempt) {
-        event.preventDefault();
-        showScreenshotWarning();
-      }
-    });
-
-    // Block right-click (context menu)
-    document.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      showScreenshotWarning();
-    });
-
-    // Detect mobile screenshot-like behavior
-    document.addEventListener("touchstart", (event) => {
-      if (event.touches.length > 2) { // Multi-touch (e.g., three-finger gestures)
-        event.preventDefault();
-        showScreenshotWarning();
-      }
-    });
-
-    // Detect visibility changes (e.g., user switching to screenshot app)
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") {
-        showScreenshotWarning();
-      }
-    });
 
     document.addEventListener('DOMContentLoaded', () => {
       let topicKey = null;
